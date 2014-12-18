@@ -22,9 +22,9 @@ A short description of the plugins in this repo
 
  * **pass-trash**
 Moves entries to a folder called *Recycle Bin*.
- * **pass-pk**
-Inserts a private key into pass. Expects the path to the key and the name of the entry under which to store it. Accepts same options as ```pass insert```.
-Example:
+ * **pass-cat**
+Inserts a text file into pass. Expects the path to the file and the name of the entry under which to store it. Accepts same options as ```pass insert```.
+Example for storing a private key:
 
         $ pass pk path/to/my/key Keys/my-favorite-key -e
         Enter pass for my-favorite-key: encryption password goes here
@@ -46,9 +46,10 @@ Until a ```make``` file is written, the recommended installation method is
 
 ## TODO
 - [x] pass-trash
-- [ ] pass-pk
+- [ ] pass-cat
 - [ ] pass-grep2
 - [ ] make install script
+- [ ] How to plug into the testing framework of pass?
 - [ ] Decide how to handle name collisions with builtin commands.
 - [ ] Decide how to pass some global variables to plugins.
 - [ ] Decide if it is worthwhile to break out built-in commands into plugins

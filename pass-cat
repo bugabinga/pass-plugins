@@ -1,0 +1,25 @@
+# pass-cat
+# A plugin to pass to store text files in password store.
+# https://github.com/flasheater/pass-plugins
+# ©2014 Oliver Jan Krylow bugabinga.net
+#!/usr/bin/env bash
+
+# sourcing pass to gain access to helper functions
+source $(which pass)
+
+local file="$1"
+local entry="$2"
+#TODO better help. look at pass
+local help="pass cat expects the first argument to be a path to a file."
+ 
+[ $# -lt 2 ] && { die $help }
+ 
+if [ -f $file ];
+then
+	echo "File $file exists."
+	if [ $entry ]; then
+		echo "$entry will be the entry."
+		# TODO
+else
+	die $help
+fi
