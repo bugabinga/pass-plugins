@@ -35,6 +35,7 @@ An experimental alternative to the ```pass grep``` command. This version decrypt
 
 ## Installing
 Until a ```make``` file is written, the recommended installation method is
+
 1. Clone this git repo (*or even better, fork, then clone*)
 
         $ git clone https://github.com/flasheater/pass-plugins
