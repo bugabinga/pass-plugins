@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# A plugin for pass - the unix password manager
+# Moves the specified entry to a folder named "Recycle Bin" and creates it if not present already
+# Author Oliver Krylow (okrylow@gmail.com) ©2014 bugabinga.net
+pass mv "$@" Recycle\ Bin/
