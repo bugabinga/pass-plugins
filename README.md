@@ -21,28 +21,33 @@ Users of git will find this familiar as it has a very similar feature called sub
 A short description of the plugins in this repo
 
  * **pass-trash**
- 	Moves entries to a folder called *Recycle Bin*.
+Moves entries to a folder called *Recycle Bin*.
  * **pass-pk**
- 	Inserts a private key into pass. Expects the path to the key and the name of the entry under which to store it. Accepts same options as ```pass insert```.
-    *  Example:
-    			$ pass pk path/to/my/key Keys/my-favorite-key -e
-                Enter pass for my-favorite-key: encryption password goes here
-        This will generate a pass entry with the encryption password on the first line and the contents of the key file after.
+Inserts a private key into pass. Expects the path to the key and the name of the entry under which to store it. Accepts same options as ```pass insert```.
+  * Example:
+
+        $ pass pk path/to/my/key Keys/my-favorite-key -e
+        Enter pass for my-favorite-key: encryption password goes here
+
+This will generate a pass entry with the encryption password on the first line and the contents of the key file after.
  * **pass-grep2**
- 	An experimental alternative to the ```pass grep``` command. This version decrypts and searches in parallel using multiple cores in the hopes to speed this command up.
+An experimental alternative to the ```pass grep``` command. This version decrypts and searches in parallel using multiple cores in the hopes to speed this command up.
 
 ## Installing
 Until a ```make``` file is written, the recommended installation method is
 1. Clone this git repo (*or even better, fork, then clone*)
-		$ git clone https://github.com/flasheater/pass-plugins
+
+    $ git clone https://github.com/flasheater/pass-plugins
+
 2. Symlink the plugins you are interested in to a location, that is in your *PATH*
-		$ ln -s path/to/pass-plugins/pass-* ~/bin/
+
+   $ ln -s path/to/pass-plugins/pass-* ~/bin/
 
 ## TODO
 - [x] pass-trash
-- [] pass-pk
-- [] pass-grep2
-- [] make install script
-- [] Decide how to handle name collisions with builtin commands.
-- [] Decide how to pass some global variables to plugins.
-- [] Decide if it is worthwhile to break out built-in commands into plugins
+- [ ] pass-pk
+- [ ] pass-grep2
+- [ ] make install script
+- [ ] Decide how to handle name collisions with builtin commands.
+- [ ] Decide how to pass some global variables to plugins.
+- [ ] Decide if it is worthwhile to break out built-in commands into plugins
