@@ -24,7 +24,7 @@ A short description of the plugins in this repo
 Moves entries to a folder called *Recycle Bin*.
  * **pass-pk**
 Inserts a private key into pass. Expects the path to the key and the name of the entry under which to store it. Accepts same options as ```pass insert```.
-  * Example:
+Example:
 
         $ pass pk path/to/my/key Keys/my-favorite-key -e
         Enter pass for my-favorite-key: encryption password goes here
@@ -37,11 +37,11 @@ An experimental alternative to the ```pass grep``` command. This version decrypt
 Until a ```make``` file is written, the recommended installation method is
 1. Clone this git repo (*or even better, fork, then clone*)
 
-    $ git clone https://github.com/flasheater/pass-plugins
+        $ git clone https://github.com/flasheater/pass-plugins
 
 2. Symlink the plugins you are interested in to a location, that is in your *PATH*
 
-   $ ln -s path/to/pass-plugins/pass-* ~/bin/
+        $ ln -s path/to/pass-plugins/pass-* ~/bin/
 
 ## TODO
 - [x] pass-trash
