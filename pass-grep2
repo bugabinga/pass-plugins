@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# pass-grep2
+# A plugin for pass to search the contents of all pass entries. Since this needs to decrypt every single entry, it can take quite some time. This alternative implementation aims to be faster by utilizing parallelism.
+# https://github.com/flasheater/pass-plugins
+# ©2014 Oliver Jan Krylow bugabinga.net
+
+# usage of GREP_OPTS has been deprecated
+GREP_OPTIONS="${PASSWORD_STORE_GREP_OPTS:---color=always}"
+
+grep2_helper() {
+    local search="$1" GPG="$2" GPG_OPTS="$3" GREP_OPTIONS="$4" passfile="$5" grepresults
+    grepresults="$($GPG -d "${GPG_OPTS[@]}" "$passfile" | grep "$GREP_OPTIONS" "$search")"
+    local grep_err="$?"
+	[ $grep_err -ne 0 ] && return
+	passfile="${passfile%.gpg}"
+	passfile="${passfile#$PREFIX/}"
+	local passfile_dir="${passfile%/*}"
+	passfile="${passfile##*/}"
+	printf "\e[94m%s/\e[1m%s\e[0m:\n" "$passfile_dir" "$passfile"
+	echo "$grepresults"
+}
+
+cmd_grep2_1() {
+    [[ $# -ne 1 ]] && die "Usage: $PROGRAM $COMMAND search-string"
+	agent_check
+	local search="$1"
+	#export helper function, so we can call it from xargs
+	declare -fx grep2_helper
+	# attempt 1 : use find + xargs -P
+	local number_of_threads=$(nproc)
+	find -L "$PREFIX" -iname '*.gpg' -print0 | xargs -0 -n1 -P "$number_of_threads" -I{} bash -c "grep2_helper '$search' '$GPG' '$GPG_OPTS' '$GREP_OPTIONS' '{}'"
+	
+	# Result ~20sec for ~ 160 files: No significant speed gain measured.
+}
+
+cmd_grep2_2() {
+    [[ $# -ne 1 ]] && die "Usage: $PROGRAM $COMMAND search-string"
+	agent_check
+	local search="$1"
+	
+	#export helper function, so we can call it from parallel
+	declare -fx grep2_helper
+	
+	# attempt 2: using gnu parallel. not default. new dependency
+	#(oliver): maybe try to use parallel and fallback to 1 or 3 if not present?
+	
+	#version with zenity
+	#find -L "$PREFIX" -iname '*.gpg' -print0 | parallel -0 --bar --no-notice grep2_helper "'$search'" "'$GPG'" "'$GPG_OPTS'" "'$GREP_OPTIONS'" {} 2> >(zenity --progress --no-cancel --auto-close --title "Pass grep $search progress")
+	
+	#terminal only version
+	find -L "$PREFIX" -iname '*.gpg' -print0 | parallel -0 --no-notice grep2_helper "'$search'" "'$GPG'" "'$GPG_OPTS'" "'$GREP_OPTIONS'" {}
+	
+	#Result ~20sec for ~ 160 files: Still no significant speed gain. I am missing something.
+}
+
+cmd_grep2_3() {
+    [[ $# -ne 1 ]] && die "Usage: $PROGRAM $COMMAND search-string"
+	agent_check
+	local search="$1"
+	
+	#export helper function, so we can call it from sub bash
+	declare -fx grep2_helper
+	
+	# attempt 3: use ampersand to run in background and let OS worry about scheduling
+	while read -r -d "" passfile; do
+	    grep2_helper "$search" "$GPG" "$GPG_OPTS" "$GREP_OPTIONS" "$passfile" & 
+	done < <(find -L "$PREFIX" -iname '*.gpg' -print0)
+	wait
+	
+	#Result ~23sec for ~ 160 files: Seems worse than before... ;(
+}
+
+cmd_grep_4() {
+    #new approach. first decrypt everything at once, then grep
+    # using xargs method, since parallel did not seem to be better/easier
+    [[ $# -ne 1 ]] && die "Usage: $PROGRAM $COMMAND search-string"
+	agent_check
+	local search="$1"
+	#export helper function, so we can call it from xargs
+	declare -fx grep2_helper
+	# attempt 4 : use find + xargs -P, but multifile decrypt first
+	local number_of_threads=$(($(nproc)+1))
+	
+	#first decrypt everything
+	tmpdir #defines $SECURE_TMPDIR
+	local passfiles="$(find -L "$PREFIX" -iname '*.gpg' -print0)"
+	"$GPG" --multifile -d "${GPG_OPTS[@]}" -o "$SECURE_TMPDIR" "$passfiles" # FAILS here. gpg multifile does not support an output directory ... -_-'
+    #then grep it
+    declare -fx grep2_helper2
+    echo $passfiles | xargs -0 -n1 -P "$number_of_threads" -I{} bash -c "grep2_helper2 '$search' '$GPG' '$GPG_OPTS' '$GREP_OPTIONS' '$SECURE_TMPDIR' '{}'"
+}
+
+grep2_helper2() {
+    local search="$1" GPG="$2" GPG_OPTS="$3" GREP_OPTIONS="$4" SECURE_TMPDIR="$5" passfile="$6" grepresults
+    grepresults="$(grep -r "$GREP_OPTIONS" "$search" $SECURE_TMPDIR)"
+    local grep_err="$?"
+	[ $grep_err -ne 0 ] && return
+	passfile="${passfile%.gpg}"
+	passfile="${passfile#$PREFIX/}"
+	local passfile_dir="${passfile%/*}"
+	passfile="${passfile##*/}"
+	printf "\e[94m%s/\e[1m%s\e[0m:\n" "$passfile_dir" "$passfile"
+	echo "$grepresults"
+}
+
+time cmd_grep2_1 "$@"
+#time cmd_grep2_2 "$@"
+#time cmd_grep2_3 "$@"
+#time cmd_grep2_4 "$@"
+#base line ~20sec for ~ 160 files
+#time cmd_grep "$@"
